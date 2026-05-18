@@ -1,17 +1,17 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Force dev deps to install (vite is in devDependencies)
 ENV NODE_ENV=development
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --ignore-scripts
+
 COPY . .
-RUN rm -rf node_modules && npm install
+RUN npm install -g vite@4.4.5
 
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
-RUN ./node_modules/.bin/vite build
+RUN vite build
 
 FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf

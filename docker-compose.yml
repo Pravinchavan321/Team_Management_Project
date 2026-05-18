@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: teamflow-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - teamflow-network
+
+  backend:
+    build: ./backend
+    container_name: teamflow-backend
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - MONGO_URI=mongodb://mongodb:27017/teamflow
+      - JWT_SECRET=your_jwt_secret_for_docker
+      - NODE_ENV=development
+    depends_on:
+      - mongodb
+    networks:
+      - teamflow-network
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=/api
+    container_name: teamflow-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - teamflow-network
+
+volumes:
+  mongo-data:
+
+networks:
+  teamflow-network:
+    driver: bridge
